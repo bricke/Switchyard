@@ -13,6 +13,7 @@ members = [
     "crates/protocol",
     "crates/switchyard-nemo-relay-plugin",
     "crates/switchyard-runner",
+    "crates/switchyard-desktop",
     "crates/switchyard-desktop-icons",
     "crates/switchyard-desktop-install",
     "crates/switchyard-menubar",
