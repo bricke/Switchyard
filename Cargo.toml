@@ -16,7 +16,6 @@ members = [
     "crates/switchyard-desktop",
     "crates/switchyard-desktop-icons",
     "crates/switchyard-desktop-install",
-    "crates/switchyard-menubar",
     "crates/switchyard-server",
     "crates/switchyard-skill-distillation",
     "crates/switchyard-soak",
