@@ -26,12 +26,23 @@ uuid.workspace = true
 ratatui = "0.30.2"
 
 [target.'cfg(target_os = "macos")'.dependencies]
-objc2-app-kit = { version = "0.3.2", default-features = false, features = ["NSWorkspace"] }
-objc2-foundation = { version = "0.3.2", default-features = false, features = ["NSString", "NSURL"] }
+objc2 = "0.6"
+dispatch2 = "0.3"
+objc2-app-kit = { version = "0.3.2", default-features = false, features = ["NSWorkspace", "NSAccessibility", "NSApplication", "NSPanel", "NSColor", "NSWindow", "NSView", "NSScreen", "NSEvent"] }
+objc2-foundation = { version = "0.3.2", default-features = false, features = ["NSString", "NSURL", "NSProcessInfo"] }
 security-framework = "3"
+[target.'cfg(any(target_os = "macos", windows))'.dependencies]
+tauri = { version = "2", features = ["tray-icon", "custom-protocol", "macos-private-api"] }
+rfd = { version = "0.17", default-features = false }
 
 [target.'cfg(windows)'.dependencies]
 windows = { version = "0.62.2", features = ["Management_Deployment", "ApplicationModel"] }
+
+[target.'cfg(any(target_os = "macos", windows))'.build-dependencies]
+tauri-build = "2"
+
+[build-dependencies]
+switchyard-desktop-icons = { path = "../switchyard-desktop-icons" }
 
 [dev-dependencies]
 # The tests check each edited config with the server's own config parser.
