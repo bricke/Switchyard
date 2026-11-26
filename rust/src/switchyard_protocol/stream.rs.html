@@ -1,4 +1,4 @@
-<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="generator" content="rustdoc"><meta name="description" content="Source of the Rust file `crates/protocol/src/stream.rs`."><title>stream.rs - source</title><script>if(window.location.protocol!=="file:")document.head.insertAdjacentHTML("beforeend","SourceSerif4-Regular-6b053e98.ttf.woff2,FiraSans-Italic-81dc35de.woff2,FiraSans-Regular-0fe48ade.woff2,FiraSans-MediumItalic-ccf7e434.woff2,FiraSans-Medium-e1aa3f0a.woff2,SourceCodePro-Regular-8badfe75.ttf.woff2,SourceCodePro-Semibold-aa29a496.ttf.woff2".split(",").map(f=>`<link rel="preload" as="font" type="font/woff2"href="../../static.files/${f}">`).join(""))</script><link rel="stylesheet" href="../../static.files/normalize-9960930a.css"><link rel="stylesheet" href="../../static.files/rustdoc-0c87338a.css"><meta name="rustdoc-vars" data-root-path="../../" data-static-root-path="../../static.files/" data-current-crate="switchyard_protocol" data-themes="" data-resource-suffix="" data-rustdoc-version="1.99.0 (b940084d7 2026-09-28)" data-channel="1.99.0" data-search-js="search-cf4fc35e.js" data-stringdex-js="stringdex-b5109af9.js" data-settings-js="settings-170eb4bf.js" ><script src="../../static.files/storage-41dd4d93.js"></script><script defer src="../../static.files/src-script-813739b1.js"></script><script defer src="../../src-files.js"></script><script defer src="../../static.files/main-417ebf0a.js"></script><noscript><link rel="stylesheet" href="../../static.files/noscript-9f56287d.css"></noscript><link rel="alternate icon" type="image/png" href="../../static.files/favicon-32x32-eab170b8.png"><link rel="icon" type="image/svg+xml" href="../../static.files/favicon-044be391.svg"></head><body class="rustdoc src"><a class="skip-main-content" href="#main-content">Skip to main content</a><!--[if lte IE 11]><div class="warning">This old browser is unsupported and will most likely display funky things.</div><![endif]--><nav class="sidebar"><div class="src-sidebar-title"><h2>Files</h2></div></nav><div class="sidebar-resizer" title="Drag to resize sidebar"></div><main><section id="main-content" class="content" tabindex="-1"><div class="main-heading"><h1><div class="sub-heading">switchyard_protocol/</div>stream.rs</h1><rustdoc-toolbar></rustdoc-toolbar></div><div class="example-wrap digits-3"><pre class="rust"><code><a href=#1 id=1 data-nosnippet>1</a><span class="comment">// SPDX-FileCopyrightText: Copyright (c) 2026 NVIDIA CORPORATION &amp; AFFILIATES. All rights reserved.
+<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="generator" content="rustdoc"><meta name="description" content="Source of the Rust file `crates/protocol/src/stream.rs`."><title>stream.rs - source</title><script>if(window.location.protocol!=="file:")document.head.insertAdjacentHTML("beforeend","SourceSerif4-Regular-6b053e98.ttf.woff2,FiraSans-Italic-81dc35de.woff2,FiraSans-Regular-0fe48ade.woff2,FiraSans-MediumItalic-ccf7e434.woff2,FiraSans-Medium-e1aa3f0a.woff2,SourceCodePro-Regular-8badfe75.ttf.woff2,SourceCodePro-Semibold-aa29a496.ttf.woff2".split(",").map(f=>`<link rel="preload" as="font" type="font/woff2"href="../../static.files/${f}">`).join(""))</script><link rel="stylesheet" href="../../static.files/normalize-9960930a.css"><link rel="stylesheet" href="../../static.files/rustdoc-1e18a8e7.css"><meta name="rustdoc-vars" data-root-path="../../" data-static-root-path="../../static.files/" data-current-crate="switchyard_protocol" data-themes="" data-resource-suffix="" data-rustdoc-version="1.102.0-nightly (137d1d494 2026-11-22)" data-channel="nightly" data-search-js="search-085293d4.js" data-stringdex-js="stringdex-b5109af9.js" data-settings-js="settings-9b351432.js" ><script src="../../static.files/storage-41dd4d93.js"></script><script defer src="../../static.files/src-script-813739b1.js"></script><script defer src="../../src-files.js"></script><script defer src="../../static.files/main-419f3a3f.js"></script><noscript><link rel="stylesheet" href="../../static.files/noscript-101b5a15.css"></noscript><link rel="alternate icon" type="image/png" href="../../static.files/favicon-32x32-eab170b8.png"><link rel="icon" type="image/svg+xml" href="../../static.files/favicon-044be391.svg"></head><body class="rustdoc src"><a class="skip-main-content" href="#main-content">Skip to main content</a><!--[if lte IE 11]><div class="warning">This old browser is unsupported and will most likely display funky things.</div><![endif]--><nav class="sidebar"><div class="src-sidebar-title"><h2>Files</h2></div></nav><div class="sidebar-resizer" title="Drag to resize sidebar"></div><main><section id="main-content" class="content" tabindex="-1"><div class="main-heading"><h1><div class="sub-heading">switchyard_protocol/</div>stream.rs</h1><rustdoc-toolbar></rustdoc-toolbar></div><div class="example-wrap digits-3"><pre class="rust"><code><a href=#1 id=1 data-nosnippet>1</a><span class="comment">// SPDX-FileCopyrightText: Copyright (c) 2026 NVIDIA CORPORATION &amp; AFFILIATES. All rights reserved.
 <a href=#2 id=2 data-nosnippet>2</a>// SPDX-License-Identifier: Apache-2.0
 <a href=#3 id=3 data-nosnippet>3</a>
 <a href=#4 id=4 data-nosnippet>4</a></span><span class="doccomment">//! Streaming half of the neutral IR: incremental response chunks ([`LlmResponseChunk`]),
@@ -214,7 +214,7 @@
 <a href=#214 id=214 data-nosnippet>214</a>    ///
 <a href=#215 id=215 data-nosnippet>215</a>    /// This conversion is lossy: only text, reasoning, and tool-call content has
 <a href=#216 id=216 data-nosnippet>216</a>    /// a synthetic chunk representation. Refusals, tool results, media, files,
-<a href=#217 id=217 data-nosnippet>217</a>    /// unknown blocks, response extensions, and preservation metadata are omitted.
+<a href=#217 id=217 data-nosnippet>217</a>    /// MCP activity, unknown blocks, response extensions, and preservation metadata are omitted.
 <a href=#218 id=218 data-nosnippet>218</a>    </span><span class="kw">pub fn </span>into_stream(<span class="self">self</span>) -&gt; LlmResponseStream {
 <a href=#219 id=219 data-nosnippet>219</a>        <span class="kw">let </span><span class="kw-2">mut </span>chunks: Vec&lt;LlmResponseChunk&gt; = Vec::new();
 <a href=#220 id=220 data-nosnippet>220</a>        chunks.push(LlmResponseChunk::MessageStart {
@@ -255,37 +255,37 @@
 <a href=#255 id=255 data-nosnippet>255</a>                        });
 <a href=#256 id=256 data-nosnippet>256</a>                        tool_call_index += <span class="number">1</span>;
 <a href=#257 id=257 data-nosnippet>257</a>                    }
-<a href=#258 id=258 data-nosnippet>258</a>                    <span class="comment">// Other variants (Image, ToolResult, Refusal, etc.) don't have
-<a href=#259 id=259 data-nosnippet>259</a>                    // a streaming chunk representation and don't appear in assistant outputs.
-<a href=#260 id=260 data-nosnippet>260</a>                    </span><span class="kw">_ </span>=&gt; {}
-<a href=#261 id=261 data-nosnippet>261</a>                }
-<a href=#262 id=262 data-nosnippet>262</a>            }
-<a href=#263 id=263 data-nosnippet>263</a>            chunks.push(LlmResponseChunk::MessageStop {
-<a href=#264 id=264 data-nosnippet>264</a>                reason: output.stop_reason.and_then(|r| {
-<a href=#265 id=265 data-nosnippet>265</a>                    serde_json::to_value(r)
-<a href=#266 id=266 data-nosnippet>266</a>                        .ok()
-<a href=#267 id=267 data-nosnippet>267</a>                        .and_then(|v| v.as_str().map(String::from))
-<a href=#268 id=268 data-nosnippet>268</a>                }),
-<a href=#269 id=269 data-nosnippet>269</a>            });
-<a href=#270 id=270 data-nosnippet>270</a>        }
-<a href=#271 id=271 data-nosnippet>271</a>        chunks.push(LlmResponseChunk::Usage(<span class="self">self</span>.usage));
-<a href=#272 id=272 data-nosnippet>272</a>        Box::pin(futures::stream::iter(
-<a href=#273 id=273 data-nosnippet>273</a>            chunks.into_iter().map(|chunk| <span class="prelude-val">Ok</span>(chunk.into())),
-<a href=#274 id=274 data-nosnippet>274</a>        ))
-<a href=#275 id=275 data-nosnippet>275</a>    }
-<a href=#276 id=276 data-nosnippet>276</a>}
-<a href=#277 id=277 data-nosnippet>277</a>
-<a href=#278 id=278 data-nosnippet>278</a><span class="kw">fn </span>push_checked_chunk(
-<a href=#279 id=279 data-nosnippet>279</a>    accumulator: <span class="kw-2">&amp;mut </span>ResponseAccumulator,
-<a href=#280 id=280 data-nosnippet>280</a>    chunk: LlmResponseChunk,
-<a href=#281 id=281 data-nosnippet>281</a>) -&gt; <span class="prelude-ty">Result</span>&lt;(), LlmClientError&gt; {
-<a href=#282 id=282 data-nosnippet>282</a>    <span class="kw">match </span>chunk {
-<a href=#283 id=283 data-nosnippet>283</a>        LlmResponseChunk::DecodeError { message } =&gt; {
-<a href=#284 id=284 data-nosnippet>284</a>            <span class="prelude-val">Err</span>(LlmClientError::ResponseTranslation(message))
-<a href=#285 id=285 data-nosnippet>285</a>        }
-<a href=#286 id=286 data-nosnippet>286</a>        LlmResponseChunk::StreamError { message } =&gt; <span class="prelude-val">Err</span>(LlmClientError::UpstreamHttp {
-<a href=#287 id=287 data-nosnippet>287</a>            status: MID_STREAM_UPSTREAM_STATUS,
-<a href=#288 id=288 data-nosnippet>288</a>            body: message,
+<a href=#258 id=258 data-nosnippet>258</a>                    <span class="comment">// Other variants, including backend MCP activity, have no synthetic chunks.
+<a href=#259 id=259 data-nosnippet>259</a>                    </span><span class="kw">_ </span>=&gt; {}
+<a href=#260 id=260 data-nosnippet>260</a>                }
+<a href=#261 id=261 data-nosnippet>261</a>            }
+<a href=#262 id=262 data-nosnippet>262</a>            chunks.push(LlmResponseChunk::MessageStop {
+<a href=#263 id=263 data-nosnippet>263</a>                reason: output.stop_reason.and_then(|r| {
+<a href=#264 id=264 data-nosnippet>264</a>                    serde_json::to_value(r)
+<a href=#265 id=265 data-nosnippet>265</a>                        .ok()
+<a href=#266 id=266 data-nosnippet>266</a>                        .and_then(|v| v.as_str().map(String::from))
+<a href=#267 id=267 data-nosnippet>267</a>                }),
+<a href=#268 id=268 data-nosnippet>268</a>            });
+<a href=#269 id=269 data-nosnippet>269</a>        }
+<a href=#270 id=270 data-nosnippet>270</a>        chunks.push(LlmResponseChunk::Usage(<span class="self">self</span>.usage));
+<a href=#271 id=271 data-nosnippet>271</a>        Box::pin(futures::stream::iter(
+<a href=#272 id=272 data-nosnippet>272</a>            chunks.into_iter().map(|chunk| <span class="prelude-val">Ok</span>(chunk.into())),
+<a href=#273 id=273 data-nosnippet>273</a>        ))
+<a href=#274 id=274 data-nosnippet>274</a>    }
+<a href=#275 id=275 data-nosnippet>275</a>}
+<a href=#276 id=276 data-nosnippet>276</a>
+<a href=#277 id=277 data-nosnippet>277</a><span class="kw">fn </span>push_checked_chunk(
+<a href=#278 id=278 data-nosnippet>278</a>    accumulator: <span class="kw-2">&amp;mut </span>ResponseAccumulator,
+<a href=#279 id=279 data-nosnippet>279</a>    chunk: LlmResponseChunk,
+<a href=#280 id=280 data-nosnippet>280</a>) -&gt; <span class="prelude-ty">Result</span>&lt;(), LlmClientError&gt; {
+<a href=#281 id=281 data-nosnippet>281</a>    <span class="kw">match </span>chunk {
+<a href=#282 id=282 data-nosnippet>282</a>        LlmResponseChunk::DecodeError { message } =&gt; {
+<a href=#283 id=283 data-nosnippet>283</a>            <span class="prelude-val">Err</span>(LlmClientError::ResponseTranslation(message))
+<a href=#284 id=284 data-nosnippet>284</a>        }
+<a href=#285 id=285 data-nosnippet>285</a>        LlmResponseChunk::StreamError { message } =&gt; <span class="prelude-val">Err</span>(LlmClientError::UpstreamHttp {
+<a href=#286 id=286 data-nosnippet>286</a>            status: MID_STREAM_UPSTREAM_STATUS,
+<a href=#287 id=287 data-nosnippet>287</a>            body: message,
+<a href=#288 id=288 data-nosnippet>288</a>            headers: Box::default(),
 <a href=#289 id=289 data-nosnippet>289</a>        }),
 <a href=#290 id=290 data-nosnippet>290</a>        chunk =&gt; {
 <a href=#291 id=291 data-nosnippet>291</a>            accumulator.push(chunk);
@@ -506,270 +506,299 @@
 <a href=#506 id=506 data-nosnippet>506</a>    <span class="kw">match </span>reason {
 <a href=#507 id=507 data-nosnippet>507</a>        <span class="prelude-val">Some</span>(<span class="string">"length" </span>| <span class="string">"max_tokens"</span>) =&gt; StopReason::MaxTokens,
 <a href=#508 id=508 data-nosnippet>508</a>        <span class="prelude-val">Some</span>(<span class="string">"tool_calls" </span>| <span class="string">"function_call" </span>| <span class="string">"tool_use"</span>) =&gt; StopReason::ToolUse,
-<a href=#509 id=509 data-nosnippet>509</a>        <span class="prelude-val">Some</span>(<span class="string">"content_filter"</span>) =&gt; StopReason::ContentFilter,
-<a href=#510 id=510 data-nosnippet>510</a>        <span class="prelude-val">Some</span>(<span class="string">"stop" </span>| <span class="string">"end_turn" </span>| <span class="string">"stop_sequence"</span>) | <span class="prelude-val">None </span>=&gt; StopReason::EndTurn,
-<a href=#511 id=511 data-nosnippet>511</a>        <span class="prelude-val">Some</span>(<span class="kw">_</span>) =&gt; StopReason::Unknown,
-<a href=#512 id=512 data-nosnippet>512</a>    }
-<a href=#513 id=513 data-nosnippet>513</a>}
-<a href=#514 id=514 data-nosnippet>514</a>
-<a href=#515 id=515 data-nosnippet>515</a><span class="attr">#[cfg(test)]
-<a href=#516 id=516 data-nosnippet>516</a></span><span class="kw">mod </span>tests {
-<a href=#517 id=517 data-nosnippet>517</a>    <span class="kw">use </span>futures::executor::block_on;
-<a href=#518 id=518 data-nosnippet>518</a>    <span class="kw">use </span>futures::stream;
-<a href=#519 id=519 data-nosnippet>519</a>
-<a href=#520 id=520 data-nosnippet>520</a>    <span class="kw">use super</span>::<span class="kw-2">*</span>;
-<a href=#521 id=521 data-nosnippet>521</a>    <span class="kw">use </span>serde_json::json;
-<a href=#522 id=522 data-nosnippet>522</a>
-<a href=#523 id=523 data-nosnippet>523</a>    <span class="kw">fn </span>fold(chunks: Vec&lt;LlmResponseChunk&gt;) -&gt; AggLlmResponse {
-<a href=#524 id=524 data-nosnippet>524</a>        <span class="kw">let </span><span class="kw-2">mut </span>accumulator = ResponseAccumulator::new();
-<a href=#525 id=525 data-nosnippet>525</a>        <span class="kw">for </span>chunk <span class="kw">in </span>chunks {
-<a href=#526 id=526 data-nosnippet>526</a>            accumulator.push(chunk);
-<a href=#527 id=527 data-nosnippet>527</a>        }
-<a href=#528 id=528 data-nosnippet>528</a>        accumulator.finish()
-<a href=#529 id=529 data-nosnippet>529</a>    }
-<a href=#530 id=530 data-nosnippet>530</a>
-<a href=#531 id=531 data-nosnippet>531</a>    <span class="attr">#[test]
-<a href=#532 id=532 data-nosnippet>532</a>    </span><span class="kw">fn </span>folds_text_usage_and_stop_reason() {
-<a href=#533 id=533 data-nosnippet>533</a>        <span class="kw">let </span>agg = fold(<span class="macro">vec!</span>[
-<a href=#534 id=534 data-nosnippet>534</a>            LlmResponseChunk::MessageStart {
-<a href=#535 id=535 data-nosnippet>535</a>                id: <span class="prelude-val">Some</span>(<span class="string">"id1"</span>.to_string()),
-<a href=#536 id=536 data-nosnippet>536</a>                model: <span class="prelude-val">Some</span>(<span class="string">"m"</span>.to_string()),
-<a href=#537 id=537 data-nosnippet>537</a>            },
-<a href=#538 id=538 data-nosnippet>538</a>            LlmResponseChunk::TextDelta {
-<a href=#539 id=539 data-nosnippet>539</a>                index: <span class="number">0</span>,
-<a href=#540 id=540 data-nosnippet>540</a>                text: <span class="string">"Hel"</span>.to_string(),
-<a href=#541 id=541 data-nosnippet>541</a>            },
-<a href=#542 id=542 data-nosnippet>542</a>            LlmResponseChunk::TextDelta {
-<a href=#543 id=543 data-nosnippet>543</a>                index: <span class="number">0</span>,
-<a href=#544 id=544 data-nosnippet>544</a>                text: <span class="string">"lo"</span>.to_string(),
-<a href=#545 id=545 data-nosnippet>545</a>            },
-<a href=#546 id=546 data-nosnippet>546</a>            LlmResponseChunk::Usage(Usage {
-<a href=#547 id=547 data-nosnippet>547</a>                output_tokens: <span class="prelude-val">Some</span>(<span class="number">2</span>),
-<a href=#548 id=548 data-nosnippet>548</a>                ..Usage::default()
-<a href=#549 id=549 data-nosnippet>549</a>            }),
-<a href=#550 id=550 data-nosnippet>550</a>            LlmResponseChunk::MessageStop {
-<a href=#551 id=551 data-nosnippet>551</a>                reason: <span class="prelude-val">Some</span>(<span class="string">"length"</span>.to_string()),
-<a href=#552 id=552 data-nosnippet>552</a>            },
-<a href=#553 id=553 data-nosnippet>553</a>        ]);
-<a href=#554 id=554 data-nosnippet>554</a>        <span class="macro">assert_eq!</span>(agg.id.as_deref(), <span class="prelude-val">Some</span>(<span class="string">"id1"</span>));
-<a href=#555 id=555 data-nosnippet>555</a>        <span class="macro">assert_eq!</span>(agg.model.as_deref(), <span class="prelude-val">Some</span>(<span class="string">"m"</span>));
-<a href=#556 id=556 data-nosnippet>556</a>        <span class="macro">assert_eq!</span>(agg.usage.output_tokens, <span class="prelude-val">Some</span>(<span class="number">2</span>));
-<a href=#557 id=557 data-nosnippet>557</a>        <span class="macro">assert_eq!</span>(agg.outputs[<span class="number">0</span>].stop_reason, <span class="prelude-val">Some</span>(StopReason::MaxTokens));
-<a href=#558 id=558 data-nosnippet>558</a>        <span class="macro">assert_eq!</span>(
-<a href=#559 id=559 data-nosnippet>559</a>            agg.outputs[<span class="number">0</span>].content,
-<a href=#560 id=560 data-nosnippet>560</a>            <span class="macro">vec!</span>[ContentBlock::Text {
-<a href=#561 id=561 data-nosnippet>561</a>                text: <span class="string">"Hello"</span>.to_string()
-<a href=#562 id=562 data-nosnippet>562</a>            }]
-<a href=#563 id=563 data-nosnippet>563</a>        );
-<a href=#564 id=564 data-nosnippet>564</a>    }
-<a href=#565 id=565 data-nosnippet>565</a>
-<a href=#566 id=566 data-nosnippet>566</a>    <span class="attr">#[test]
-<a href=#567 id=567 data-nosnippet>567</a>    </span><span class="kw">fn </span>aggregates_normalized_chunks_inside_stream_event() {
-<a href=#568 id=568 data-nosnippet>568</a>        <span class="kw">let </span>response = LlmResponse::Stream(Box::pin(stream::iter([<span class="prelude-val">Ok</span>(
-<a href=#569 id=569 data-nosnippet>569</a>            LlmResponseStreamEvent::preserved(
-<a href=#570 id=570 data-nosnippet>570</a>                <span class="kw">crate</span>::WireFormat::OpenAiChat,
-<a href=#571 id=571 data-nosnippet>571</a>                <span class="macro">json!</span>({
-<a href=#572 id=572 data-nosnippet>572</a>                <span class="string">"choices"</span>: [{<span class="string">"delta"</span>: {<span class="string">"content"</span>: <span class="string">"hello"</span>}}],
-<a href=#573 id=573 data-nosnippet>573</a>                <span class="string">"system_fingerprint"</span>: <span class="string">"fp_exact"
-<a href=#574 id=574 data-nosnippet>574</a>                </span>}),
-<a href=#575 id=575 data-nosnippet>575</a>                <span class="macro">vec!</span>[LlmResponseChunk::TextDelta {
-<a href=#576 id=576 data-nosnippet>576</a>                    index: <span class="number">0</span>,
-<a href=#577 id=577 data-nosnippet>577</a>                    text: <span class="string">"hello"</span>.to_string(),
-<a href=#578 id=578 data-nosnippet>578</a>                }],
-<a href=#579 id=579 data-nosnippet>579</a>            ),
-<a href=#580 id=580 data-nosnippet>580</a>        )])));
-<a href=#581 id=581 data-nosnippet>581</a>        <span class="kw">let </span>aggregate = block_on(response.into_agg()).expect(<span class="string">"stream event should aggregate"</span>);
-<a href=#582 id=582 data-nosnippet>582</a>
-<a href=#583 id=583 data-nosnippet>583</a>        <span class="macro">assert_eq!</span>(
-<a href=#584 id=584 data-nosnippet>584</a>            aggregate.outputs[<span class="number">0</span>].content,
-<a href=#585 id=585 data-nosnippet>585</a>            <span class="macro">vec!</span>[ContentBlock::Text {
-<a href=#586 id=586 data-nosnippet>586</a>                text: <span class="string">"hello"</span>.to_string()
-<a href=#587 id=587 data-nosnippet>587</a>            }]
-<a href=#588 id=588 data-nosnippet>588</a>        );
-<a href=#589 id=589 data-nosnippet>589</a>    }
-<a href=#590 id=590 data-nosnippet>590</a>
-<a href=#591 id=591 data-nosnippet>591</a>    <span class="attr">#[test]
-<a href=#592 id=592 data-nosnippet>592</a>    </span><span class="kw">fn </span>replacing_normalized_content_drops_preservation() {
-<a href=#593 id=593 data-nosnippet>593</a>        <span class="kw">let </span>event = LlmResponseStreamEvent::preserved(
-<a href=#594 id=594 data-nosnippet>594</a>            <span class="kw">crate</span>::WireFormat::OpenAiChat,
-<a href=#595 id=595 data-nosnippet>595</a>            <span class="macro">json!</span>({<span class="string">"choices"</span>: [{<span class="string">"delta"</span>: {<span class="string">"content"</span>: <span class="string">"old"</span>}}]}),
-<a href=#596 id=596 data-nosnippet>596</a>            <span class="macro">vec!</span>[LlmResponseChunk::TextDelta {
-<a href=#597 id=597 data-nosnippet>597</a>                index: <span class="number">0</span>,
-<a href=#598 id=598 data-nosnippet>598</a>                text: <span class="string">"old"</span>.to_string(),
-<a href=#599 id=599 data-nosnippet>599</a>            }],
-<a href=#600 id=600 data-nosnippet>600</a>        )
-<a href=#601 id=601 data-nosnippet>601</a>        .replace_normalized(<span class="macro">vec!</span>[LlmResponseChunk::TextDelta {
-<a href=#602 id=602 data-nosnippet>602</a>            index: <span class="number">0</span>,
-<a href=#603 id=603 data-nosnippet>603</a>            text: <span class="string">"new"</span>.to_string(),
-<a href=#604 id=604 data-nosnippet>604</a>        }]);
-<a href=#605 id=605 data-nosnippet>605</a>
-<a href=#606 id=606 data-nosnippet>606</a>        <span class="macro">assert!</span>(event.preservation().is_none());
-<a href=#607 id=607 data-nosnippet>607</a>        <span class="macro">assert_eq!</span>(
-<a href=#608 id=608 data-nosnippet>608</a>            event.normalized(),
-<a href=#609 id=609 data-nosnippet>609</a>            <span class="kw-2">&amp;</span>[LlmResponseChunk::TextDelta {
-<a href=#610 id=610 data-nosnippet>610</a>                index: <span class="number">0</span>,
-<a href=#611 id=611 data-nosnippet>611</a>                text: <span class="string">"new"</span>.to_string(),
-<a href=#612 id=612 data-nosnippet>612</a>            }]
-<a href=#613 id=613 data-nosnippet>613</a>        );
-<a href=#614 id=614 data-nosnippet>614</a>    }
-<a href=#615 id=615 data-nosnippet>615</a>
-<a href=#616 id=616 data-nosnippet>616</a>    <span class="attr">#[test]
-<a href=#617 id=617 data-nosnippet>617</a>    </span><span class="kw">fn </span>stream_errors_inside_preserved_events_remain_typed() {
-<a href=#618 id=618 data-nosnippet>618</a>        <span class="kw">let </span>response = LlmResponse::Stream(Box::pin(stream::iter([<span class="prelude-val">Ok</span>(
-<a href=#619 id=619 data-nosnippet>619</a>            LlmResponseStreamEvent::preserved(
-<a href=#620 id=620 data-nosnippet>620</a>                <span class="kw">crate</span>::WireFormat::OpenAiChat,
-<a href=#621 id=621 data-nosnippet>621</a>                <span class="macro">json!</span>({<span class="string">"error"</span>: {<span class="string">"message"</span>: <span class="string">"provider failed"</span>}}),
-<a href=#622 id=622 data-nosnippet>622</a>                <span class="macro">vec!</span>[LlmResponseChunk::StreamError {
-<a href=#623 id=623 data-nosnippet>623</a>                    message: <span class="string">"provider failed"</span>.to_string(),
-<a href=#624 id=624 data-nosnippet>624</a>                }],
-<a href=#625 id=625 data-nosnippet>625</a>            ),
-<a href=#626 id=626 data-nosnippet>626</a>        )])));
-<a href=#627 id=627 data-nosnippet>627</a>
-<a href=#628 id=628 data-nosnippet>628</a>        <span class="kw">let </span>error = block_on(response.into_agg()).err();
-<a href=#629 id=629 data-nosnippet>629</a>        <span class="macro">assert!</span>(<span class="macro">matches!</span>(
-<a href=#630 id=630 data-nosnippet>630</a>            error,
-<a href=#631 id=631 data-nosnippet>631</a>            <span class="prelude-val">Some</span>(LlmClientError::UpstreamHttp {
-<a href=#632 id=632 data-nosnippet>632</a>                status: MID_STREAM_UPSTREAM_STATUS,
-<a href=#633 id=633 data-nosnippet>633</a>                ..
-<a href=#634 id=634 data-nosnippet>634</a>            })
-<a href=#635 id=635 data-nosnippet>635</a>        ));
-<a href=#636 id=636 data-nosnippet>636</a>    }
-<a href=#637 id=637 data-nosnippet>637</a>
-<a href=#638 id=638 data-nosnippet>638</a>    <span class="attr">#[test]
-<a href=#639 id=639 data-nosnippet>639</a>    </span><span class="kw">fn </span>assembles_tool_calls_by_index() {
-<a href=#640 id=640 data-nosnippet>640</a>        <span class="comment">// id/name arrive once, arguments stream across deltas and parse as JSON.
-<a href=#641 id=641 data-nosnippet>641</a>        </span><span class="kw">let </span>agg = fold(<span class="macro">vec!</span>[
-<a href=#642 id=642 data-nosnippet>642</a>            LlmResponseChunk::ToolCallDelta {
-<a href=#643 id=643 data-nosnippet>643</a>                index: <span class="number">0</span>,
-<a href=#644 id=644 data-nosnippet>644</a>                id: <span class="prelude-val">Some</span>(<span class="string">"call_1"</span>.to_string()),
-<a href=#645 id=645 data-nosnippet>645</a>                name: <span class="prelude-val">Some</span>(<span class="string">"lookup"</span>.to_string()),
-<a href=#646 id=646 data-nosnippet>646</a>                arguments_delta: <span class="prelude-val">Some</span>(<span class="string">"{\"q\":"</span>.to_string()),
-<a href=#647 id=647 data-nosnippet>647</a>            },
-<a href=#648 id=648 data-nosnippet>648</a>            LlmResponseChunk::ToolCallDelta {
-<a href=#649 id=649 data-nosnippet>649</a>                index: <span class="number">0</span>,
-<a href=#650 id=650 data-nosnippet>650</a>                id: <span class="prelude-val">None</span>,
-<a href=#651 id=651 data-nosnippet>651</a>                name: <span class="prelude-val">None</span>,
-<a href=#652 id=652 data-nosnippet>652</a>                arguments_delta: <span class="prelude-val">Some</span>(<span class="string">"\"rust\"}"</span>.to_string()),
-<a href=#653 id=653 data-nosnippet>653</a>            },
-<a href=#654 id=654 data-nosnippet>654</a>            LlmResponseChunk::MessageStop {
-<a href=#655 id=655 data-nosnippet>655</a>                reason: <span class="prelude-val">Some</span>(<span class="string">"tool_calls"</span>.to_string()),
-<a href=#656 id=656 data-nosnippet>656</a>            },
-<a href=#657 id=657 data-nosnippet>657</a>        ]);
-<a href=#658 id=658 data-nosnippet>658</a>        <span class="macro">assert_eq!</span>(agg.outputs[<span class="number">0</span>].stop_reason, <span class="prelude-val">Some</span>(StopReason::ToolUse));
-<a href=#659 id=659 data-nosnippet>659</a>        <span class="macro">assert_eq!</span>(
-<a href=#660 id=660 data-nosnippet>660</a>            agg.outputs[<span class="number">0</span>].content,
-<a href=#661 id=661 data-nosnippet>661</a>            <span class="macro">vec!</span>[ContentBlock::ToolCall(ToolCall {
-<a href=#662 id=662 data-nosnippet>662</a>                id: <span class="string">"call_1"</span>.to_string(),
-<a href=#663 id=663 data-nosnippet>663</a>                name: <span class="string">"lookup"</span>.to_string(),
-<a href=#664 id=664 data-nosnippet>664</a>                arguments: <span class="macro">json!</span>({<span class="string">"q"</span>: <span class="string">"rust"</span>}),
-<a href=#665 id=665 data-nosnippet>665</a>            })]
-<a href=#666 id=666 data-nosnippet>666</a>        );
-<a href=#667 id=667 data-nosnippet>667</a>    }
-<a href=#668 id=668 data-nosnippet>668</a>
-<a href=#669 id=669 data-nosnippet>669</a>    <span class="attr">#[test]
-<a href=#670 id=670 data-nosnippet>670</a>    </span><span class="kw">fn </span>reasoning_precedes_text_in_content() {
-<a href=#671 id=671 data-nosnippet>671</a>        <span class="kw">let </span>agg = fold(<span class="macro">vec!</span>[
-<a href=#672 id=672 data-nosnippet>672</a>            LlmResponseChunk::ReasoningDelta {
-<a href=#673 id=673 data-nosnippet>673</a>                index: <span class="number">0</span>,
-<a href=#674 id=674 data-nosnippet>674</a>                text: <span class="string">"think"</span>.to_string(),
-<a href=#675 id=675 data-nosnippet>675</a>            },
-<a href=#676 id=676 data-nosnippet>676</a>            LlmResponseChunk::TextDelta {
-<a href=#677 id=677 data-nosnippet>677</a>                index: <span class="number">0</span>,
-<a href=#678 id=678 data-nosnippet>678</a>                text: <span class="string">"answer"</span>.to_string(),
-<a href=#679 id=679 data-nosnippet>679</a>            },
-<a href=#680 id=680 data-nosnippet>680</a>        ]);
-<a href=#681 id=681 data-nosnippet>681</a>        <span class="macro">assert_eq!</span>(
-<a href=#682 id=682 data-nosnippet>682</a>            agg.outputs[<span class="number">0</span>].content,
-<a href=#683 id=683 data-nosnippet>683</a>            <span class="macro">vec!</span>[
-<a href=#684 id=684 data-nosnippet>684</a>                ContentBlock::Reasoning {
-<a href=#685 id=685 data-nosnippet>685</a>                    text: <span class="string">"think"</span>.to_string(),
-<a href=#686 id=686 data-nosnippet>686</a>                    signature: <span class="prelude-val">None</span>,
-<a href=#687 id=687 data-nosnippet>687</a>                    details: Vec::new(),
-<a href=#688 id=688 data-nosnippet>688</a>                },
-<a href=#689 id=689 data-nosnippet>689</a>                ContentBlock::Text {
-<a href=#690 id=690 data-nosnippet>690</a>                    text: <span class="string">"answer"</span>.to_string(),
-<a href=#691 id=691 data-nosnippet>691</a>                },
-<a href=#692 id=692 data-nosnippet>692</a>            ]
-<a href=#693 id=693 data-nosnippet>693</a>        );
-<a href=#694 id=694 data-nosnippet>694</a>    }
-<a href=#695 id=695 data-nosnippet>695</a>
-<a href=#696 id=696 data-nosnippet>696</a>    <span class="attr">#[test]
-<a href=#697 id=697 data-nosnippet>697</a>    </span><span class="kw">fn </span>into_stream_round_trips_through_into_agg() {
-<a href=#698 id=698 data-nosnippet>698</a>        <span class="kw">let </span>original = AggLlmResponse {
-<a href=#699 id=699 data-nosnippet>699</a>            id: <span class="prelude-val">Some</span>(<span class="string">"id1"</span>.to_string()),
-<a href=#700 id=700 data-nosnippet>700</a>            model: <span class="prelude-val">Some</span>(<span class="string">"m"</span>.to_string()),
-<a href=#701 id=701 data-nosnippet>701</a>            outputs: <span class="macro">vec!</span>[ResponseOutput {
-<a href=#702 id=702 data-nosnippet>702</a>                role: Role::Assistant,
-<a href=#703 id=703 data-nosnippet>703</a>                content: <span class="macro">vec!</span>[ContentBlock::Text {
-<a href=#704 id=704 data-nosnippet>704</a>                    text: <span class="string">"hello"</span>.to_string(),
-<a href=#705 id=705 data-nosnippet>705</a>                }],
-<a href=#706 id=706 data-nosnippet>706</a>                url_citations: Vec::new(),
-<a href=#707 id=707 data-nosnippet>707</a>                stop_reason: <span class="prelude-val">Some</span>(StopReason::EndTurn),
-<a href=#708 id=708 data-nosnippet>708</a>            }],
-<a href=#709 id=709 data-nosnippet>709</a>            usage: Usage {
-<a href=#710 id=710 data-nosnippet>710</a>                output_tokens: <span class="prelude-val">Some</span>(<span class="number">3</span>),
-<a href=#711 id=711 data-nosnippet>711</a>                ..Usage::default()
-<a href=#712 id=712 data-nosnippet>712</a>            },
-<a href=#713 id=713 data-nosnippet>713</a>            ..AggLlmResponse::default()
-<a href=#714 id=714 data-nosnippet>714</a>        };
-<a href=#715 id=715 data-nosnippet>715</a>        <span class="kw">let </span>stream = LlmResponse::Stream(original.clone().into_stream());
-<a href=#716 id=716 data-nosnippet>716</a>        <span class="kw">let </span>recovered = block_on(stream.into_agg()).expect(<span class="string">"into_agg failed"</span>);
-<a href=#717 id=717 data-nosnippet>717</a>        <span class="macro">assert_eq!</span>(recovered.id, original.id);
-<a href=#718 id=718 data-nosnippet>718</a>        <span class="macro">assert_eq!</span>(recovered.model, original.model);
-<a href=#719 id=719 data-nosnippet>719</a>        <span class="macro">assert_eq!</span>(recovered.usage.output_tokens, original.usage.output_tokens);
-<a href=#720 id=720 data-nosnippet>720</a>        <span class="macro">assert_eq!</span>(
-<a href=#721 id=721 data-nosnippet>721</a>            recovered.outputs[<span class="number">0</span>].stop_reason,
-<a href=#722 id=722 data-nosnippet>722</a>            original.outputs[<span class="number">0</span>].stop_reason
-<a href=#723 id=723 data-nosnippet>723</a>        );
-<a href=#724 id=724 data-nosnippet>724</a>        <span class="macro">assert_eq!</span>(recovered.outputs[<span class="number">0</span>].content, original.outputs[<span class="number">0</span>].content);
-<a href=#725 id=725 data-nosnippet>725</a>    }
-<a href=#726 id=726 data-nosnippet>726</a>
-<a href=#727 id=727 data-nosnippet>727</a>    <span class="attr">#[test]
-<a href=#728 id=728 data-nosnippet>728</a>    </span><span class="kw">fn </span>into_stream_retains_encrypted_reasoning_and_text() {
-<a href=#729 id=729 data-nosnippet>729</a>        <span class="kw">let </span>details = <span class="macro">vec!</span>[<span class="macro">json!</span>({
-<a href=#730 id=730 data-nosnippet>730</a>            <span class="string">"type"</span>: <span class="string">"reasoning.encrypted"</span>,
-<a href=#731 id=731 data-nosnippet>731</a>            <span class="string">"data"</span>: <span class="string">"opaque-encrypted-reasoning"
-<a href=#732 id=732 data-nosnippet>732</a>        </span>})];
-<a href=#733 id=733 data-nosnippet>733</a>        <span class="kw">let </span>original = AggLlmResponse {
-<a href=#734 id=734 data-nosnippet>734</a>            outputs: <span class="macro">vec!</span>[ResponseOutput {
-<a href=#735 id=735 data-nosnippet>735</a>                role: Role::Assistant,
-<a href=#736 id=736 data-nosnippet>736</a>                content: <span class="macro">vec!</span>[ContentBlock::Reasoning {
-<a href=#737 id=737 data-nosnippet>737</a>                    text: <span class="string">"fallback reasoning"</span>.to_string(),
-<a href=#738 id=738 data-nosnippet>738</a>                    signature: <span class="prelude-val">None</span>,
-<a href=#739 id=739 data-nosnippet>739</a>                    details: details.clone(),
-<a href=#740 id=740 data-nosnippet>740</a>                }],
-<a href=#741 id=741 data-nosnippet>741</a>                url_citations: Vec::new(),
-<a href=#742 id=742 data-nosnippet>742</a>                stop_reason: <span class="prelude-val">Some</span>(StopReason::EndTurn),
-<a href=#743 id=743 data-nosnippet>743</a>            }],
-<a href=#744 id=744 data-nosnippet>744</a>            ..AggLlmResponse::default()
-<a href=#745 id=745 data-nosnippet>745</a>        };
-<a href=#746 id=746 data-nosnippet>746</a>
-<a href=#747 id=747 data-nosnippet>747</a>        <span class="kw">let </span>recovered = block_on(LlmResponse::Stream(original.into_stream()).into_agg())
-<a href=#748 id=748 data-nosnippet>748</a>            .expect(<span class="string">"into_agg failed"</span>);
-<a href=#749 id=749 data-nosnippet>749</a>        <span class="kw">let </span>ContentBlock::Reasoning {
-<a href=#750 id=750 data-nosnippet>750</a>            text,
-<a href=#751 id=751 data-nosnippet>751</a>            details: recovered_details,
-<a href=#752 id=752 data-nosnippet>752</a>            ..
-<a href=#753 id=753 data-nosnippet>753</a>        } = <span class="kw-2">&amp;</span>recovered.outputs[<span class="number">0</span>].content[<span class="number">0</span>]
-<a href=#754 id=754 data-nosnippet>754</a>        <span class="kw">else </span>{
-<a href=#755 id=755 data-nosnippet>755</a>            <span class="macro">panic!</span>(<span class="string">"expected reasoning block"</span>);
-<a href=#756 id=756 data-nosnippet>756</a>        };
-<a href=#757 id=757 data-nosnippet>757</a>        <span class="macro">assert_eq!</span>(text, <span class="string">"fallback reasoning"</span>);
-<a href=#758 id=758 data-nosnippet>758</a>        <span class="macro">assert_eq!</span>(recovered_details, <span class="kw-2">&amp;</span>details);
-<a href=#759 id=759 data-nosnippet>759</a>    }
-<a href=#760 id=760 data-nosnippet>760</a>
-<a href=#761 id=761 data-nosnippet>761</a>    <span class="attr">#[test]
-<a href=#762 id=762 data-nosnippet>762</a>    </span><span class="kw">fn </span>into_agg_preserves_stream_item_error() {
-<a href=#763 id=763 data-nosnippet>763</a>        <span class="kw">let </span>response = LlmResponse::Stream(Box::pin(stream::once(<span class="kw">async </span>{
-<a href=#764 id=764 data-nosnippet>764</a>            <span class="prelude-val">Err</span>(LlmClientError::Timeout {
-<a href=#765 id=765 data-nosnippet>765</a>                source: Box::new(std::io::Error::other(<span class="string">"timed out"</span>)),
-<a href=#766 id=766 data-nosnippet>766</a>            })
-<a href=#767 id=767 data-nosnippet>767</a>        })));
-<a href=#768 id=768 data-nosnippet>768</a>
-<a href=#769 id=769 data-nosnippet>769</a>        <span class="kw">let </span><span class="prelude-val">Err</span>(error) = block_on(response.into_agg()) <span class="kw">else </span>{
-<a href=#770 id=770 data-nosnippet>770</a>            <span class="macro">panic!</span>(<span class="string">"expected stream aggregation to fail"</span>);
-<a href=#771 id=771 data-nosnippet>771</a>        };
-<a href=#772 id=772 data-nosnippet>772</a>        <span class="macro">assert!</span>(<span class="macro">matches!</span>(error, LlmClientError::Timeout { .. }));
-<a href=#773 id=773 data-nosnippet>773</a>    }
-<a href=#774 id=774 data-nosnippet>774</a>}
+<a href=#509 id=509 data-nosnippet>509</a>        <span class="comment">// Anthropic spells a content-policy stop `refusal`; the buffered codec
+<a href=#510 id=510 data-nosnippet>510</a>        // already maps it (anthropic/buffered.rs, map_anthropic_stop_reason).
+<a href=#511 id=511 data-nosnippet>511</a>        </span><span class="prelude-val">Some</span>(<span class="string">"content_filter" </span>| <span class="string">"refusal"</span>) =&gt; StopReason::ContentFilter,
+<a href=#512 id=512 data-nosnippet>512</a>        <span class="prelude-val">Some</span>(<span class="string">"stop" </span>| <span class="string">"end_turn" </span>| <span class="string">"stop_sequence"</span>) | <span class="prelude-val">None </span>=&gt; StopReason::EndTurn,
+<a href=#513 id=513 data-nosnippet>513</a>        <span class="prelude-val">Some</span>(<span class="kw">_</span>) =&gt; StopReason::Unknown,
+<a href=#514 id=514 data-nosnippet>514</a>    }
+<a href=#515 id=515 data-nosnippet>515</a>}
+<a href=#516 id=516 data-nosnippet>516</a>
+<a href=#517 id=517 data-nosnippet>517</a><span class="attr">#[cfg(test)]
+<a href=#518 id=518 data-nosnippet>518</a></span><span class="kw">mod </span>tests {
+<a href=#519 id=519 data-nosnippet>519</a>    <span class="kw">use </span>futures::executor::block_on;
+<a href=#520 id=520 data-nosnippet>520</a>    <span class="kw">use </span>futures::stream;
+<a href=#521 id=521 data-nosnippet>521</a>
+<a href=#522 id=522 data-nosnippet>522</a>    <span class="kw">use super</span>::<span class="kw-2">*</span>;
+<a href=#523 id=523 data-nosnippet>523</a>    <span class="kw">use </span>serde_json::json;
+<a href=#524 id=524 data-nosnippet>524</a>
+<a href=#525 id=525 data-nosnippet>525</a>    <span class="kw">fn </span>fold(chunks: Vec&lt;LlmResponseChunk&gt;) -&gt; AggLlmResponse {
+<a href=#526 id=526 data-nosnippet>526</a>        <span class="kw">let </span><span class="kw-2">mut </span>accumulator = ResponseAccumulator::new();
+<a href=#527 id=527 data-nosnippet>527</a>        <span class="kw">for </span>chunk <span class="kw">in </span>chunks {
+<a href=#528 id=528 data-nosnippet>528</a>            accumulator.push(chunk);
+<a href=#529 id=529 data-nosnippet>529</a>        }
+<a href=#530 id=530 data-nosnippet>530</a>        accumulator.finish()
+<a href=#531 id=531 data-nosnippet>531</a>    }
+<a href=#532 id=532 data-nosnippet>532</a>
+<a href=#533 id=533 data-nosnippet>533</a>    <span class="attr">#[test]
+<a href=#534 id=534 data-nosnippet>534</a>    </span><span class="kw">fn </span>folds_text_usage_and_stop_reason() {
+<a href=#535 id=535 data-nosnippet>535</a>        <span class="kw">let </span>agg = fold(<span class="macro">vec!</span>[
+<a href=#536 id=536 data-nosnippet>536</a>            LlmResponseChunk::MessageStart {
+<a href=#537 id=537 data-nosnippet>537</a>                id: <span class="prelude-val">Some</span>(<span class="string">"id1"</span>.to_string()),
+<a href=#538 id=538 data-nosnippet>538</a>                model: <span class="prelude-val">Some</span>(<span class="string">"m"</span>.to_string()),
+<a href=#539 id=539 data-nosnippet>539</a>            },
+<a href=#540 id=540 data-nosnippet>540</a>            LlmResponseChunk::TextDelta {
+<a href=#541 id=541 data-nosnippet>541</a>                index: <span class="number">0</span>,
+<a href=#542 id=542 data-nosnippet>542</a>                text: <span class="string">"Hel"</span>.to_string(),
+<a href=#543 id=543 data-nosnippet>543</a>            },
+<a href=#544 id=544 data-nosnippet>544</a>            LlmResponseChunk::TextDelta {
+<a href=#545 id=545 data-nosnippet>545</a>                index: <span class="number">0</span>,
+<a href=#546 id=546 data-nosnippet>546</a>                text: <span class="string">"lo"</span>.to_string(),
+<a href=#547 id=547 data-nosnippet>547</a>            },
+<a href=#548 id=548 data-nosnippet>548</a>            LlmResponseChunk::Usage(Usage {
+<a href=#549 id=549 data-nosnippet>549</a>                output_tokens: <span class="prelude-val">Some</span>(<span class="number">2</span>),
+<a href=#550 id=550 data-nosnippet>550</a>                ..Usage::default()
+<a href=#551 id=551 data-nosnippet>551</a>            }),
+<a href=#552 id=552 data-nosnippet>552</a>            LlmResponseChunk::MessageStop {
+<a href=#553 id=553 data-nosnippet>553</a>                reason: <span class="prelude-val">Some</span>(<span class="string">"length"</span>.to_string()),
+<a href=#554 id=554 data-nosnippet>554</a>            },
+<a href=#555 id=555 data-nosnippet>555</a>        ]);
+<a href=#556 id=556 data-nosnippet>556</a>        <span class="macro">assert_eq!</span>(agg.id.as_deref(), <span class="prelude-val">Some</span>(<span class="string">"id1"</span>));
+<a href=#557 id=557 data-nosnippet>557</a>        <span class="macro">assert_eq!</span>(agg.model.as_deref(), <span class="prelude-val">Some</span>(<span class="string">"m"</span>));
+<a href=#558 id=558 data-nosnippet>558</a>        <span class="macro">assert_eq!</span>(agg.usage.output_tokens, <span class="prelude-val">Some</span>(<span class="number">2</span>));
+<a href=#559 id=559 data-nosnippet>559</a>        <span class="macro">assert_eq!</span>(agg.outputs[<span class="number">0</span>].stop_reason, <span class="prelude-val">Some</span>(StopReason::MaxTokens));
+<a href=#560 id=560 data-nosnippet>560</a>        <span class="macro">assert_eq!</span>(
+<a href=#561 id=561 data-nosnippet>561</a>            agg.outputs[<span class="number">0</span>].content,
+<a href=#562 id=562 data-nosnippet>562</a>            <span class="macro">vec!</span>[ContentBlock::Text {
+<a href=#563 id=563 data-nosnippet>563</a>                text: <span class="string">"Hello"</span>.to_string()
+<a href=#564 id=564 data-nosnippet>564</a>            }]
+<a href=#565 id=565 data-nosnippet>565</a>        );
+<a href=#566 id=566 data-nosnippet>566</a>    }
+<a href=#567 id=567 data-nosnippet>567</a>
+<a href=#568 id=568 data-nosnippet>568</a>    <span class="attr">#[test]
+<a href=#569 id=569 data-nosnippet>569</a>    </span><span class="kw">fn </span>stop_reason_spellings_normalize_the_same_streamed_as_buffered() {
+<a href=#570 id=570 data-nosnippet>570</a>        <span class="comment">// A stop reason has to mean the same thing whether the response arrived
+<a href=#571 id=571 data-nosnippet>571</a>        // buffered or was folded out of a stream. The expectations here are the
+<a href=#572 id=572 data-nosnippet>572</a>        // ones the codecs apply to a buffered body.
+<a href=#573 id=573 data-nosnippet>573</a>        </span><span class="kw">for </span>(reason, expected) <span class="kw">in </span>[
+<a href=#574 id=574 data-nosnippet>574</a>            (<span class="string">"length"</span>, StopReason::MaxTokens),
+<a href=#575 id=575 data-nosnippet>575</a>            (<span class="string">"max_tokens"</span>, StopReason::MaxTokens),
+<a href=#576 id=576 data-nosnippet>576</a>            (<span class="string">"tool_calls"</span>, StopReason::ToolUse),
+<a href=#577 id=577 data-nosnippet>577</a>            (<span class="string">"tool_use"</span>, StopReason::ToolUse),
+<a href=#578 id=578 data-nosnippet>578</a>            (<span class="string">"content_filter"</span>, StopReason::ContentFilter),
+<a href=#579 id=579 data-nosnippet>579</a>            (<span class="string">"refusal"</span>, StopReason::ContentFilter),
+<a href=#580 id=580 data-nosnippet>580</a>            (<span class="string">"stop"</span>, StopReason::EndTurn),
+<a href=#581 id=581 data-nosnippet>581</a>            (<span class="string">"end_turn"</span>, StopReason::EndTurn),
+<a href=#582 id=582 data-nosnippet>582</a>        ] {
+<a href=#583 id=583 data-nosnippet>583</a>            <span class="kw">let </span>agg = fold(<span class="macro">vec!</span>[LlmResponseChunk::MessageStop {
+<a href=#584 id=584 data-nosnippet>584</a>                reason: <span class="prelude-val">Some</span>(reason.to_string()),
+<a href=#585 id=585 data-nosnippet>585</a>            }]);
+<a href=#586 id=586 data-nosnippet>586</a>
+<a href=#587 id=587 data-nosnippet>587</a>            <span class="macro">assert_eq!</span>(
+<a href=#588 id=588 data-nosnippet>588</a>                agg.outputs.first().and_then(|output| output.stop_reason),
+<a href=#589 id=589 data-nosnippet>589</a>                <span class="prelude-val">Some</span>(expected),
+<a href=#590 id=590 data-nosnippet>590</a>                <span class="string">"stop reason {reason:?}"
+<a href=#591 id=591 data-nosnippet>591</a>            </span>);
+<a href=#592 id=592 data-nosnippet>592</a>        }
+<a href=#593 id=593 data-nosnippet>593</a>    }
+<a href=#594 id=594 data-nosnippet>594</a>
+<a href=#595 id=595 data-nosnippet>595</a>    <span class="attr">#[test]
+<a href=#596 id=596 data-nosnippet>596</a>    </span><span class="kw">fn </span>aggregates_normalized_chunks_inside_stream_event() {
+<a href=#597 id=597 data-nosnippet>597</a>        <span class="kw">let </span>response = LlmResponse::Stream(Box::pin(stream::iter([<span class="prelude-val">Ok</span>(
+<a href=#598 id=598 data-nosnippet>598</a>            LlmResponseStreamEvent::preserved(
+<a href=#599 id=599 data-nosnippet>599</a>                <span class="kw">crate</span>::WireFormat::OpenAiChat,
+<a href=#600 id=600 data-nosnippet>600</a>                <span class="macro">json!</span>({
+<a href=#601 id=601 data-nosnippet>601</a>                <span class="string">"choices"</span>: [{<span class="string">"delta"</span>: {<span class="string">"content"</span>: <span class="string">"hello"</span>}}],
+<a href=#602 id=602 data-nosnippet>602</a>                <span class="string">"system_fingerprint"</span>: <span class="string">"fp_exact"
+<a href=#603 id=603 data-nosnippet>603</a>                </span>}),
+<a href=#604 id=604 data-nosnippet>604</a>                <span class="macro">vec!</span>[LlmResponseChunk::TextDelta {
+<a href=#605 id=605 data-nosnippet>605</a>                    index: <span class="number">0</span>,
+<a href=#606 id=606 data-nosnippet>606</a>                    text: <span class="string">"hello"</span>.to_string(),
+<a href=#607 id=607 data-nosnippet>607</a>                }],
+<a href=#608 id=608 data-nosnippet>608</a>            ),
+<a href=#609 id=609 data-nosnippet>609</a>        )])));
+<a href=#610 id=610 data-nosnippet>610</a>        <span class="kw">let </span>aggregate = block_on(response.into_agg()).expect(<span class="string">"stream event should aggregate"</span>);
+<a href=#611 id=611 data-nosnippet>611</a>
+<a href=#612 id=612 data-nosnippet>612</a>        <span class="macro">assert_eq!</span>(
+<a href=#613 id=613 data-nosnippet>613</a>            aggregate.outputs[<span class="number">0</span>].content,
+<a href=#614 id=614 data-nosnippet>614</a>            <span class="macro">vec!</span>[ContentBlock::Text {
+<a href=#615 id=615 data-nosnippet>615</a>                text: <span class="string">"hello"</span>.to_string()
+<a href=#616 id=616 data-nosnippet>616</a>            }]
+<a href=#617 id=617 data-nosnippet>617</a>        );
+<a href=#618 id=618 data-nosnippet>618</a>    }
+<a href=#619 id=619 data-nosnippet>619</a>
+<a href=#620 id=620 data-nosnippet>620</a>    <span class="attr">#[test]
+<a href=#621 id=621 data-nosnippet>621</a>    </span><span class="kw">fn </span>replacing_normalized_content_drops_preservation() {
+<a href=#622 id=622 data-nosnippet>622</a>        <span class="kw">let </span>event = LlmResponseStreamEvent::preserved(
+<a href=#623 id=623 data-nosnippet>623</a>            <span class="kw">crate</span>::WireFormat::OpenAiChat,
+<a href=#624 id=624 data-nosnippet>624</a>            <span class="macro">json!</span>({<span class="string">"choices"</span>: [{<span class="string">"delta"</span>: {<span class="string">"content"</span>: <span class="string">"old"</span>}}]}),
+<a href=#625 id=625 data-nosnippet>625</a>            <span class="macro">vec!</span>[LlmResponseChunk::TextDelta {
+<a href=#626 id=626 data-nosnippet>626</a>                index: <span class="number">0</span>,
+<a href=#627 id=627 data-nosnippet>627</a>                text: <span class="string">"old"</span>.to_string(),
+<a href=#628 id=628 data-nosnippet>628</a>            }],
+<a href=#629 id=629 data-nosnippet>629</a>        )
+<a href=#630 id=630 data-nosnippet>630</a>        .replace_normalized(<span class="macro">vec!</span>[LlmResponseChunk::TextDelta {
+<a href=#631 id=631 data-nosnippet>631</a>            index: <span class="number">0</span>,
+<a href=#632 id=632 data-nosnippet>632</a>            text: <span class="string">"new"</span>.to_string(),
+<a href=#633 id=633 data-nosnippet>633</a>        }]);
+<a href=#634 id=634 data-nosnippet>634</a>
+<a href=#635 id=635 data-nosnippet>635</a>        <span class="macro">assert!</span>(event.preservation().is_none());
+<a href=#636 id=636 data-nosnippet>636</a>        <span class="macro">assert_eq!</span>(
+<a href=#637 id=637 data-nosnippet>637</a>            event.normalized(),
+<a href=#638 id=638 data-nosnippet>638</a>            <span class="kw-2">&amp;</span>[LlmResponseChunk::TextDelta {
+<a href=#639 id=639 data-nosnippet>639</a>                index: <span class="number">0</span>,
+<a href=#640 id=640 data-nosnippet>640</a>                text: <span class="string">"new"</span>.to_string(),
+<a href=#641 id=641 data-nosnippet>641</a>            }]
+<a href=#642 id=642 data-nosnippet>642</a>        );
+<a href=#643 id=643 data-nosnippet>643</a>    }
+<a href=#644 id=644 data-nosnippet>644</a>
+<a href=#645 id=645 data-nosnippet>645</a>    <span class="attr">#[test]
+<a href=#646 id=646 data-nosnippet>646</a>    </span><span class="kw">fn </span>stream_errors_inside_preserved_events_remain_typed() {
+<a href=#647 id=647 data-nosnippet>647</a>        <span class="kw">let </span>response = LlmResponse::Stream(Box::pin(stream::iter([<span class="prelude-val">Ok</span>(
+<a href=#648 id=648 data-nosnippet>648</a>            LlmResponseStreamEvent::preserved(
+<a href=#649 id=649 data-nosnippet>649</a>                <span class="kw">crate</span>::WireFormat::OpenAiChat,
+<a href=#650 id=650 data-nosnippet>650</a>                <span class="macro">json!</span>({<span class="string">"error"</span>: {<span class="string">"message"</span>: <span class="string">"provider failed"</span>}}),
+<a href=#651 id=651 data-nosnippet>651</a>                <span class="macro">vec!</span>[LlmResponseChunk::StreamError {
+<a href=#652 id=652 data-nosnippet>652</a>                    message: <span class="string">"provider failed"</span>.to_string(),
+<a href=#653 id=653 data-nosnippet>653</a>                }],
+<a href=#654 id=654 data-nosnippet>654</a>            ),
+<a href=#655 id=655 data-nosnippet>655</a>        )])));
+<a href=#656 id=656 data-nosnippet>656</a>
+<a href=#657 id=657 data-nosnippet>657</a>        <span class="kw">let </span>error = block_on(response.into_agg()).err();
+<a href=#658 id=658 data-nosnippet>658</a>        <span class="macro">assert!</span>(<span class="macro">matches!</span>(
+<a href=#659 id=659 data-nosnippet>659</a>            error,
+<a href=#660 id=660 data-nosnippet>660</a>            <span class="prelude-val">Some</span>(LlmClientError::UpstreamHttp {
+<a href=#661 id=661 data-nosnippet>661</a>                status: MID_STREAM_UPSTREAM_STATUS,
+<a href=#662 id=662 data-nosnippet>662</a>                ..
+<a href=#663 id=663 data-nosnippet>663</a>            })
+<a href=#664 id=664 data-nosnippet>664</a>        ));
+<a href=#665 id=665 data-nosnippet>665</a>    }
+<a href=#666 id=666 data-nosnippet>666</a>
+<a href=#667 id=667 data-nosnippet>667</a>    <span class="attr">#[test]
+<a href=#668 id=668 data-nosnippet>668</a>    </span><span class="kw">fn </span>assembles_tool_calls_by_index() {
+<a href=#669 id=669 data-nosnippet>669</a>        <span class="comment">// id/name arrive once, arguments stream across deltas and parse as JSON.
+<a href=#670 id=670 data-nosnippet>670</a>        </span><span class="kw">let </span>agg = fold(<span class="macro">vec!</span>[
+<a href=#671 id=671 data-nosnippet>671</a>            LlmResponseChunk::ToolCallDelta {
+<a href=#672 id=672 data-nosnippet>672</a>                index: <span class="number">0</span>,
+<a href=#673 id=673 data-nosnippet>673</a>                id: <span class="prelude-val">Some</span>(<span class="string">"call_1"</span>.to_string()),
+<a href=#674 id=674 data-nosnippet>674</a>                name: <span class="prelude-val">Some</span>(<span class="string">"lookup"</span>.to_string()),
+<a href=#675 id=675 data-nosnippet>675</a>                arguments_delta: <span class="prelude-val">Some</span>(<span class="string">"{\"q\":"</span>.to_string()),
+<a href=#676 id=676 data-nosnippet>676</a>            },
+<a href=#677 id=677 data-nosnippet>677</a>            LlmResponseChunk::ToolCallDelta {
+<a href=#678 id=678 data-nosnippet>678</a>                index: <span class="number">0</span>,
+<a href=#679 id=679 data-nosnippet>679</a>                id: <span class="prelude-val">None</span>,
+<a href=#680 id=680 data-nosnippet>680</a>                name: <span class="prelude-val">None</span>,
+<a href=#681 id=681 data-nosnippet>681</a>                arguments_delta: <span class="prelude-val">Some</span>(<span class="string">"\"rust\"}"</span>.to_string()),
+<a href=#682 id=682 data-nosnippet>682</a>            },
+<a href=#683 id=683 data-nosnippet>683</a>            LlmResponseChunk::MessageStop {
+<a href=#684 id=684 data-nosnippet>684</a>                reason: <span class="prelude-val">Some</span>(<span class="string">"tool_calls"</span>.to_string()),
+<a href=#685 id=685 data-nosnippet>685</a>            },
+<a href=#686 id=686 data-nosnippet>686</a>        ]);
+<a href=#687 id=687 data-nosnippet>687</a>        <span class="macro">assert_eq!</span>(agg.outputs[<span class="number">0</span>].stop_reason, <span class="prelude-val">Some</span>(StopReason::ToolUse));
+<a href=#688 id=688 data-nosnippet>688</a>        <span class="macro">assert_eq!</span>(
+<a href=#689 id=689 data-nosnippet>689</a>            agg.outputs[<span class="number">0</span>].content,
+<a href=#690 id=690 data-nosnippet>690</a>            <span class="macro">vec!</span>[ContentBlock::ToolCall(ToolCall {
+<a href=#691 id=691 data-nosnippet>691</a>                id: <span class="string">"call_1"</span>.to_string(),
+<a href=#692 id=692 data-nosnippet>692</a>                name: <span class="string">"lookup"</span>.to_string(),
+<a href=#693 id=693 data-nosnippet>693</a>                arguments: <span class="macro">json!</span>({<span class="string">"q"</span>: <span class="string">"rust"</span>}),
+<a href=#694 id=694 data-nosnippet>694</a>            })]
+<a href=#695 id=695 data-nosnippet>695</a>        );
+<a href=#696 id=696 data-nosnippet>696</a>    }
+<a href=#697 id=697 data-nosnippet>697</a>
+<a href=#698 id=698 data-nosnippet>698</a>    <span class="attr">#[test]
+<a href=#699 id=699 data-nosnippet>699</a>    </span><span class="kw">fn </span>reasoning_precedes_text_in_content() {
+<a href=#700 id=700 data-nosnippet>700</a>        <span class="kw">let </span>agg = fold(<span class="macro">vec!</span>[
+<a href=#701 id=701 data-nosnippet>701</a>            LlmResponseChunk::ReasoningDelta {
+<a href=#702 id=702 data-nosnippet>702</a>                index: <span class="number">0</span>,
+<a href=#703 id=703 data-nosnippet>703</a>                text: <span class="string">"think"</span>.to_string(),
+<a href=#704 id=704 data-nosnippet>704</a>            },
+<a href=#705 id=705 data-nosnippet>705</a>            LlmResponseChunk::TextDelta {
+<a href=#706 id=706 data-nosnippet>706</a>                index: <span class="number">0</span>,
+<a href=#707 id=707 data-nosnippet>707</a>                text: <span class="string">"answer"</span>.to_string(),
+<a href=#708 id=708 data-nosnippet>708</a>            },
+<a href=#709 id=709 data-nosnippet>709</a>        ]);
+<a href=#710 id=710 data-nosnippet>710</a>        <span class="macro">assert_eq!</span>(
+<a href=#711 id=711 data-nosnippet>711</a>            agg.outputs[<span class="number">0</span>].content,
+<a href=#712 id=712 data-nosnippet>712</a>            <span class="macro">vec!</span>[
+<a href=#713 id=713 data-nosnippet>713</a>                ContentBlock::Reasoning {
+<a href=#714 id=714 data-nosnippet>714</a>                    text: <span class="string">"think"</span>.to_string(),
+<a href=#715 id=715 data-nosnippet>715</a>                    signature: <span class="prelude-val">None</span>,
+<a href=#716 id=716 data-nosnippet>716</a>                    details: Vec::new(),
+<a href=#717 id=717 data-nosnippet>717</a>                },
+<a href=#718 id=718 data-nosnippet>718</a>                ContentBlock::Text {
+<a href=#719 id=719 data-nosnippet>719</a>                    text: <span class="string">"answer"</span>.to_string(),
+<a href=#720 id=720 data-nosnippet>720</a>                },
+<a href=#721 id=721 data-nosnippet>721</a>            ]
+<a href=#722 id=722 data-nosnippet>722</a>        );
+<a href=#723 id=723 data-nosnippet>723</a>    }
+<a href=#724 id=724 data-nosnippet>724</a>
+<a href=#725 id=725 data-nosnippet>725</a>    <span class="attr">#[test]
+<a href=#726 id=726 data-nosnippet>726</a>    </span><span class="kw">fn </span>into_stream_round_trips_through_into_agg() {
+<a href=#727 id=727 data-nosnippet>727</a>        <span class="kw">let </span>original = AggLlmResponse {
+<a href=#728 id=728 data-nosnippet>728</a>            id: <span class="prelude-val">Some</span>(<span class="string">"id1"</span>.to_string()),
+<a href=#729 id=729 data-nosnippet>729</a>            model: <span class="prelude-val">Some</span>(<span class="string">"m"</span>.to_string()),
+<a href=#730 id=730 data-nosnippet>730</a>            outputs: <span class="macro">vec!</span>[ResponseOutput {
+<a href=#731 id=731 data-nosnippet>731</a>                role: Role::Assistant,
+<a href=#732 id=732 data-nosnippet>732</a>                content: <span class="macro">vec!</span>[ContentBlock::Text {
+<a href=#733 id=733 data-nosnippet>733</a>                    text: <span class="string">"hello"</span>.to_string(),
+<a href=#734 id=734 data-nosnippet>734</a>                }],
+<a href=#735 id=735 data-nosnippet>735</a>                url_citations: Vec::new(),
+<a href=#736 id=736 data-nosnippet>736</a>                stop_reason: <span class="prelude-val">Some</span>(StopReason::EndTurn),
+<a href=#737 id=737 data-nosnippet>737</a>            }],
+<a href=#738 id=738 data-nosnippet>738</a>            usage: Usage {
+<a href=#739 id=739 data-nosnippet>739</a>                output_tokens: <span class="prelude-val">Some</span>(<span class="number">3</span>),
+<a href=#740 id=740 data-nosnippet>740</a>                ..Usage::default()
+<a href=#741 id=741 data-nosnippet>741</a>            },
+<a href=#742 id=742 data-nosnippet>742</a>            ..AggLlmResponse::default()
+<a href=#743 id=743 data-nosnippet>743</a>        };
+<a href=#744 id=744 data-nosnippet>744</a>        <span class="kw">let </span>stream = LlmResponse::Stream(original.clone().into_stream());
+<a href=#745 id=745 data-nosnippet>745</a>        <span class="kw">let </span>recovered = block_on(stream.into_agg()).expect(<span class="string">"into_agg failed"</span>);
+<a href=#746 id=746 data-nosnippet>746</a>        <span class="macro">assert_eq!</span>(recovered.id, original.id);
+<a href=#747 id=747 data-nosnippet>747</a>        <span class="macro">assert_eq!</span>(recovered.model, original.model);
+<a href=#748 id=748 data-nosnippet>748</a>        <span class="macro">assert_eq!</span>(recovered.usage.output_tokens, original.usage.output_tokens);
+<a href=#749 id=749 data-nosnippet>749</a>        <span class="macro">assert_eq!</span>(
+<a href=#750 id=750 data-nosnippet>750</a>            recovered.outputs[<span class="number">0</span>].stop_reason,
+<a href=#751 id=751 data-nosnippet>751</a>            original.outputs[<span class="number">0</span>].stop_reason
+<a href=#752 id=752 data-nosnippet>752</a>        );
+<a href=#753 id=753 data-nosnippet>753</a>        <span class="macro">assert_eq!</span>(recovered.outputs[<span class="number">0</span>].content, original.outputs[<span class="number">0</span>].content);
+<a href=#754 id=754 data-nosnippet>754</a>    }
+<a href=#755 id=755 data-nosnippet>755</a>
+<a href=#756 id=756 data-nosnippet>756</a>    <span class="attr">#[test]
+<a href=#757 id=757 data-nosnippet>757</a>    </span><span class="kw">fn </span>into_stream_retains_encrypted_reasoning_and_text() {
+<a href=#758 id=758 data-nosnippet>758</a>        <span class="kw">let </span>details = <span class="macro">vec!</span>[<span class="macro">json!</span>({
+<a href=#759 id=759 data-nosnippet>759</a>            <span class="string">"type"</span>: <span class="string">"reasoning.encrypted"</span>,
+<a href=#760 id=760 data-nosnippet>760</a>            <span class="string">"data"</span>: <span class="string">"opaque-encrypted-reasoning"
+<a href=#761 id=761 data-nosnippet>761</a>        </span>})];
+<a href=#762 id=762 data-nosnippet>762</a>        <span class="kw">let </span>original = AggLlmResponse {
+<a href=#763 id=763 data-nosnippet>763</a>            outputs: <span class="macro">vec!</span>[ResponseOutput {
+<a href=#764 id=764 data-nosnippet>764</a>                role: Role::Assistant,
+<a href=#765 id=765 data-nosnippet>765</a>                content: <span class="macro">vec!</span>[ContentBlock::Reasoning {
+<a href=#766 id=766 data-nosnippet>766</a>                    text: <span class="string">"fallback reasoning"</span>.to_string(),
+<a href=#767 id=767 data-nosnippet>767</a>                    signature: <span class="prelude-val">None</span>,
+<a href=#768 id=768 data-nosnippet>768</a>                    details: details.clone(),
+<a href=#769 id=769 data-nosnippet>769</a>                }],
+<a href=#770 id=770 data-nosnippet>770</a>                url_citations: Vec::new(),
+<a href=#771 id=771 data-nosnippet>771</a>                stop_reason: <span class="prelude-val">Some</span>(StopReason::EndTurn),
+<a href=#772 id=772 data-nosnippet>772</a>            }],
+<a href=#773 id=773 data-nosnippet>773</a>            ..AggLlmResponse::default()
+<a href=#774 id=774 data-nosnippet>774</a>        };
+<a href=#775 id=775 data-nosnippet>775</a>
+<a href=#776 id=776 data-nosnippet>776</a>        <span class="kw">let </span>recovered = block_on(LlmResponse::Stream(original.into_stream()).into_agg())
+<a href=#777 id=777 data-nosnippet>777</a>            .expect(<span class="string">"into_agg failed"</span>);
+<a href=#778 id=778 data-nosnippet>778</a>        <span class="kw">let </span>ContentBlock::Reasoning {
+<a href=#779 id=779 data-nosnippet>779</a>            text,
+<a href=#780 id=780 data-nosnippet>780</a>            details: recovered_details,
+<a href=#781 id=781 data-nosnippet>781</a>            ..
+<a href=#782 id=782 data-nosnippet>782</a>        } = <span class="kw-2">&amp;</span>recovered.outputs[<span class="number">0</span>].content[<span class="number">0</span>]
+<a href=#783 id=783 data-nosnippet>783</a>        <span class="kw">else </span>{
+<a href=#784 id=784 data-nosnippet>784</a>            <span class="macro">panic!</span>(<span class="string">"expected reasoning block"</span>);
+<a href=#785 id=785 data-nosnippet>785</a>        };
+<a href=#786 id=786 data-nosnippet>786</a>        <span class="macro">assert_eq!</span>(text, <span class="string">"fallback reasoning"</span>);
+<a href=#787 id=787 data-nosnippet>787</a>        <span class="macro">assert_eq!</span>(recovered_details, <span class="kw-2">&amp;</span>details);
+<a href=#788 id=788 data-nosnippet>788</a>    }
+<a href=#789 id=789 data-nosnippet>789</a>
+<a href=#790 id=790 data-nosnippet>790</a>    <span class="attr">#[test]
+<a href=#791 id=791 data-nosnippet>791</a>    </span><span class="kw">fn </span>into_agg_preserves_stream_item_error() {
+<a href=#792 id=792 data-nosnippet>792</a>        <span class="kw">let </span>response = LlmResponse::Stream(Box::pin(stream::once(<span class="kw">async </span>{
+<a href=#793 id=793 data-nosnippet>793</a>            <span class="prelude-val">Err</span>(LlmClientError::Timeout {
+<a href=#794 id=794 data-nosnippet>794</a>                source: Box::new(std::io::Error::other(<span class="string">"timed out"</span>)),
+<a href=#795 id=795 data-nosnippet>795</a>            })
+<a href=#796 id=796 data-nosnippet>796</a>        })));
+<a href=#797 id=797 data-nosnippet>797</a>
+<a href=#798 id=798 data-nosnippet>798</a>        <span class="kw">let </span><span class="prelude-val">Err</span>(error) = block_on(response.into_agg()) <span class="kw">else </span>{
+<a href=#799 id=799 data-nosnippet>799</a>            <span class="macro">panic!</span>(<span class="string">"expected stream aggregation to fail"</span>);
+<a href=#800 id=800 data-nosnippet>800</a>        };
+<a href=#801 id=801 data-nosnippet>801</a>        <span class="macro">assert!</span>(<span class="macro">matches!</span>(error, LlmClientError::Timeout { .. }));
+<a href=#802 id=802 data-nosnippet>802</a>    }
+<a href=#803 id=803 data-nosnippet>803</a>}
 </code></pre></div></section></main></body></html>
